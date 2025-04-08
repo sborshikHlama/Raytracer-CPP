@@ -13,6 +13,7 @@ class vec3 {
 		vec3(double e0, double e1, double e2): e{e0, e1, e2} {}
 
 		// const - метод не может менять e
+		// эти три метода что-то вроде геттеров
 		double x() const {return e[0]; }
 		double y() const {return e[1]; }
 		double z() const {return e[2]; }
