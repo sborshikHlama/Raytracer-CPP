@@ -25,7 +25,9 @@ class sphere : public hittable {
 				return (false);
 			
 			auto	sqrtd = std::sqrt(discriminant);
-			auto	root = (-b - sqrtd) / 2 * a;
+			auto	root = (-b - sqrtd) / (2 * a);
+			vec3	outward_normal = (rec.p - center) / radius;
+			rec.set_face_normal(r, outward_normal);
 
 			if (root <= ray_tmin || ray_tmax <= root)
 			{

@@ -2,7 +2,7 @@
 # define COLOR_H
 
 #include "vec3.h"
-#include <iostream>
+#include "main.h"
 
 //Type alias
 using color = vec3;

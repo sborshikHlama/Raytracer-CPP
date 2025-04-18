@@ -1,11 +1,9 @@
-#include "color.h"
-#include "vec3.h"
-#include "ray.h"
-
-#include <iostream>
+#include "main.h"
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h"
 
 /*
-
 Центр камеры — это точка в 3D-пространстве, из которой исходят все лучи сцены.
 Её ещё называют "точкой глаза" (eye point), потому что она моделирует позицию наблюдателя.
 В терминах рейтрейсинга это точка O (origin) для всех лучей P(t) = O + t * D.
@@ -14,33 +12,13 @@
 то есть перпендикулярен его плоскости.
 Это значит, что камера "смотрит" прямо на центр viewport, и направление взгляда 
 (вектор N) составляет угол 90° с плоскостью окна.
-
 */
 
-double	hit_sphere(const point3& center, double radius, const ray& r)
+color ray_color(const ray& r, const hittable& world)
 {
-	vec3	oc = center - r.origin();
-	auto	a = dot(r.direction(), r.direction());
-	auto	b = -2 * dot(r.direction(), oc);
-	auto	c = dot(oc, oc) - radius * radius;
-	auto	discriminant = b*b - 4*a*c;
-
-	if (discriminant < 0)
-		return (-1.0);
-	else
-		return ((-b - std::sqrt(discriminant)) / (2.0 * a));
-}
-
-color ray_color(const ray& r)
-{
-	// Получаем точку на луче который прохоидит сквозь сферу
-	auto	t = hit_sphere(point3(0, 0, -1), 0.5, r);
-
-	if (t > 0.0)
-	{
-		// Получаем нормаль находим лучь P и вычитаем из него центр C
-		vec3	N = unit_vector(r.at(t) - vec3(0, 0, -1));
-		return (0.5 * color(N.x() + 1, N.y() + 1, N.z() + 1));
+	hit_record	rec;
+	if (world.hit(r, 0, infinity, rec)) {
+		return 0.5 * (rec.normal + color(1, 1, 1));
 	}
 	vec3	unit_direction = unit_vector(r.direction());
 	auto	a = 0.5 * (unit_direction.y() + 1.0);
@@ -58,6 +36,14 @@ int main(void)
 	int		image_height = int(image_width / aspect_ratio);
 	image_height = (image_height < 1) ? 1 : image_height;
 
+	// World
+	hittable_list world;
+
+	world.add(make_shared<sphere>(point3(0, 1, -1), 0.5));
+	world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));
+	world.add(make_shared<sphere>(point3(0, -100.5, -1), 100));
+
+	// Camera
 	auto	focal_length = 1.0;
 	auto	viewport_height = 2.0;
 	auto	viewport_width = viewport_height * (double(image_width) / image_height);
@@ -89,7 +75,7 @@ int main(void)
 			auto	ray_direction = pixel_center - camera_center;
 			ray		r(camera_center, ray_direction);
 
-			color	pixel_color = ray_color(r);
+			color	pixel_color = ray_color(r, world);
 			write_color(std::cout, pixel_color);
 		}
 	}
